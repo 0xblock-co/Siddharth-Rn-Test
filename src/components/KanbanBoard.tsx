@@ -81,14 +81,9 @@ const KanbanColumn = ({
           <Text style={styles.cardTitle}>{cardData?.name}</Text>
           <View style={styles.headerRight}>
             {cardData?.value !== undefined && (
-              <TouchableOpacity
-                onPress={() => onValuePress(item)}
-                style={styles.valueBadge}
-              >
-                <Text style={styles.cardValue}>
-                  ${cardData.value.toLocaleString()}
-                </Text>
-              </TouchableOpacity>
+              <Text style={styles.cardValue}>
+                ${cardData.value.toLocaleString()}
+              </Text>
             )}
             <TouchableOpacity
               onPress={() => onMovePress(item)}
@@ -380,9 +375,10 @@ const styles = StyleSheet.create({
   },
   cardValue: {
     ...commonFontStyle(700, 1.4, Colors.primary),
+    bottom: 3,
   },
   moveBtn: {
-    padding: wp(4),
+    paddingHorizontal: wp(4),
   },
   moveIcon: {
     fontSize: wp(20),

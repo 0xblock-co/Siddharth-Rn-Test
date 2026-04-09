@@ -68,12 +68,19 @@ export const workflow = createApi({
         method: HTTP_METHOD.GET,
       }),
     }),
-    getItemById: builder.query<any, {id: string}>({
-      query: ({id}) => ({
+    getItemById: builder.query<any, { id: string }>({
+      query: ({ id }) => ({
         url: `${API_ENDPOINTS.ITEMS}/${id}`,
         method: HTTP_METHOD.GET,
       }),
       providesTags: ['Items'],
+    }),
+    deleteItem: builder.mutation<any, { id: string }>({
+      query: ({ id }) => ({
+        url: `${API_ENDPOINTS.ITEMS}/${id}`,
+        method: HTTP_METHOD.DELETE,
+      }),
+      invalidatesTags: ['Items'],
     }),
   }),
 });
@@ -86,4 +93,5 @@ export const {
   useUpdateItemMutation,
   useGetUsersQuery,
   useGetItemByIdQuery,
+  useDeleteItemMutation,
 } = workflow;

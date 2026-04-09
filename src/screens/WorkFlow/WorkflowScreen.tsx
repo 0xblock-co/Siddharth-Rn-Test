@@ -34,8 +34,6 @@ const WorkflowScreen = ({ route }: any) => {
       }).unwrap();
 
       setModalVisible(false);
-      // KanbanColumn will handle the refresh if we use a tag or if we manually trigger it.
-      // Since it's RTK Query, we should use tags for automatic refresh.
     } catch (error) {
       console.error('Failed to create item:', error);
     }

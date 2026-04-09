@@ -19,6 +19,8 @@ interface DynamicFormModalProps {
   fields: any[];
   onSubmit: (formData: any) => void;
   isLoading?: boolean;
+  initialValues?: any;
+  title?: string;
 }
 
 const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
@@ -27,16 +29,18 @@ const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
   fields = [],
   onSubmit,
   isLoading = false,
+  initialValues = {},
+  title,
 }) => {
-  const [formState, setFormState] = useState<any>({});
+  const [formState, setFormState] = useState<any>(initialValues);
   const [errors, setErrors] = useState<any>({});
 
   useEffect(() => {
     if (isVisible) {
-      setFormState({});
+      setFormState(initialValues || {});
       setErrors({});
     }
-  }, [isVisible]);
+  }, [isVisible, initialValues]);
 
   const handleInputChange = (key: string, value: any) => {
     setFormState({ ...formState, [key]: value });
@@ -87,7 +91,7 @@ const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
           </View>
         );
       case 'select':
-        const options = field.options.map((opt: string) => ({
+        const options = (field.options || []).map((opt: string) => ({
           label: opt,
           value: opt,
         }));
@@ -133,7 +137,7 @@ const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Create New Item</Text>
+          <Text style={styles.title}>{title || 'Create New Item'}</Text>
           <TouchableOpacity onPress={onClose}>
             <Text style={styles.closeIcon}>✕</Text>
           </TouchableOpacity>
@@ -162,7 +166,9 @@ const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
             {isLoading ? (
               <ActivityIndicator color={Colors.white} size="small" />
             ) : (
-              <Text style={styles.submitText}>Create</Text>
+              <Text style={styles.submitText}>
+                {Object.keys(initialValues || {}).length > 0 ? 'Save Changes' : 'Create'}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
