@@ -21,11 +21,13 @@ import { SCREENS } from '../navigation/ScreensName';
 interface KanbanBoardProps {
   workflowId: string;
   statuses: any[];
+  filterAssigneeId?: string;
 }
 
 const KanbanColumn = ({
   workflowId,
   status,
+  filterAssigneeId,
   onAssigneePress,
   onValuePress,
   onMovePress,
@@ -37,9 +39,16 @@ const KanbanColumn = ({
   const { data, isLoading, isFetching } = useGetItemsQuery({
     workflowId,
     statusId: status.id,
+    assignedToId: filterAssigneeId,
     page: page,
     limit: 10,
   });
+
+  // Reset page and items when filter changes
+  React.useEffect(() => {
+    setPage(1);
+    setAllItems([]);
+  }, [filterAssigneeId, workflowId]);
 
   React.useEffect(() => {
     if (data?.data) {
@@ -181,6 +190,7 @@ const KanbanColumn = ({
 const KanbanBoard: React.FC<KanbanBoardProps> = ({
   workflowId,
   statuses = [],
+  filterAssigneeId,
 }) => {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isUserModalVisible, setUserModalVisible] = useState(false);
@@ -268,6 +278,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
             key={status.id || index}
             workflowId={workflowId}
             status={status}
+            filterAssigneeId={filterAssigneeId}
             onAssigneePress={handleAssigneePress}
             onValuePress={handleValuePress}
             onMovePress={handleMovePress}
