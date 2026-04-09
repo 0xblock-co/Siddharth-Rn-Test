@@ -112,12 +112,14 @@ const ItemDetailScreen = ({ route }: any) => {
   };
 
   const renderDetailRow = (
+    key: string,
     label: string,
     value: any,
     onPress?: () => void,
     isClickable?: boolean,
   ) => (
     <TouchableOpacity
+      key={key}
       style={styles.detailRow}
       onPress={onPress}
       disabled={!onPress}
@@ -150,7 +152,7 @@ const ItemDetailScreen = ({ route }: any) => {
               if (field.key === 'value' && typeof value === 'number') {
                 value = `$${value.toLocaleString()}`;
               }
-              return renderDetailRow(field.label, value, undefined, false);
+              return renderDetailRow(field.key, field.label, value, undefined, false);
             })}
           </View>
 
@@ -202,18 +204,21 @@ const ItemDetailScreen = ({ route }: any) => {
             >
               Workflow Status
             </Text>
-            {renderDetailRow('Workflow Key', item?.workflowKey)}
+            {renderDetailRow('workflowKey', 'Workflow Key', item?.workflowKey)}
             {renderDetailRow(
+              'status',
               'Status',
               item?.statusKey?.replace('_', ' ').toUpperCase(),
               () => setStatusModalVisible(true),
               true,
             )}
             {renderDetailRow(
+              'createdAt',
               'Created At',
               new Date(item?.createdAt).toLocaleString(),
             )}
             {renderDetailRow(
+              'updatedAt',
               'Last Updated',
               new Date(item?.updatedAt).toLocaleString(),
             )}

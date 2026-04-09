@@ -23,13 +23,16 @@ interface DynamicFormModalProps {
   title?: string;
 }
 
+const DEFAULT_FIELDS: any[] = [];
+const DEFAULT_INITIAL_VALUES = {};
+
 const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
   isVisible,
   onClose,
-  fields = [],
+  fields = DEFAULT_FIELDS,
   onSubmit,
   isLoading = false,
-  initialValues = {},
+  initialValues = DEFAULT_INITIAL_VALUES,
   title,
 }) => {
   const [formState, setFormState] = useState<any>(initialValues);
@@ -37,7 +40,7 @@ const DynamicFormModal: React.FC<DynamicFormModalProps> = ({
 
   useEffect(() => {
     if (isVisible) {
-      setFormState(initialValues || {});
+      setFormState(initialValues);
       setErrors({});
     }
   }, [isVisible, initialValues]);

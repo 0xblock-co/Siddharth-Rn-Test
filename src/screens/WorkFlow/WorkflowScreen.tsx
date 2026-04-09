@@ -15,6 +15,8 @@ import { wp, hp, commonFontStyle } from '../../utils/responsiveFn/responsiveFn';
 import CustomImage from '../../components/CustomImage';
 import { IMAGES } from '../../assets/images';
 
+const EMPTY_ARRAY: any[] = [];
+
 const WorkflowScreen = ({ route }: any) => {
   const { item: initialItem } = route.params || {};
   const [isModalVisible, setModalVisible] = useState(false);
@@ -23,6 +25,7 @@ const WorkflowScreen = ({ route }: any) => {
   const [createItem, { isLoading: isCreating }] = useCreateItemMutation();
 
   const workflowData = data?.data || initialItem;
+  const fields = workflowData?.fields || EMPTY_ARRAY;
 
   const handleCreateItem = async (formData: any) => {
     try {
@@ -64,7 +67,7 @@ const WorkflowScreen = ({ route }: any) => {
       <DynamicFormModal
         isVisible={isModalVisible}
         onClose={() => setModalVisible(false)}
-        fields={workflowData?.fields || []}
+        fields={fields}
         onSubmit={handleCreateItem}
         isLoading={isCreating}
       />
