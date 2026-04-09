@@ -1,38 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Colors } from '../theme/Colors';
 import { wp, hp, commonFontStyle } from '../utils/responsiveFn/responsiveFn';
-import CustomDrawer from './CustomDrawer';
+import { useNavigation } from '@react-navigation/native';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
 
 interface CustomHeaderProps {
   title: string;
-  workflows?: any[];
 }
 
-const CustomHeader: React.FC<CustomHeaderProps> = ({ title, workflows }) => {
-  const [isDrawerVisible, setDrawerVisible] = useState(false);
+const CustomHeader: React.FC<CustomHeaderProps> = ({ title }) => {
+  const navigation = useNavigation<DrawerNavigationProp<any>>();
 
-  const toggleDrawer = () => {
-    setDrawerVisible(!isDrawerVisible);
+  const handleMenuPress = () => {
+    navigation.openDrawer();
   };
 
   return (
-    <View>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={toggleDrawer} style={styles.menuButton}>
-          <View style={styles.hamburgerLine} />
-          <View style={[styles.hamburgerLine, { width: wp(15) }]} />
-          <View style={styles.hamburgerLine} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{title}</Text>
-        <View style={{ width: wp(30) }} />
-      </View>
-
-      <CustomDrawer
-        isVisible={isDrawerVisible}
-        onClose={toggleDrawer}
-        workflows={workflows}
-      />
+    <View style={styles.header}>
+      <TouchableOpacity onPress={handleMenuPress} style={styles.menuButton}>
+        <View style={styles.hamburgerLine} />
+        <View style={[styles.hamburgerLine, { width: wp(15) }]} />
+        <View style={styles.hamburgerLine} />
+      </TouchableOpacity>
+      <Text style={styles.headerTitle}>{title}</Text>
+      <View style={{ width: wp(30) }} />
     </View>
   );
 };

@@ -9,6 +9,7 @@ export const IMAGES = {
   backArrow: require('./icons/backArrow.png'),
   backArrow2: require('./icons/backArrow2.png'),
   rightArrow: require('./icons/rightArrow.png'),
+  plus: require('./icons/plus.png'),
 };
 
 export const Animation = {};

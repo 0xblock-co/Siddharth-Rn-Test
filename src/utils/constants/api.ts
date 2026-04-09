@@ -25,6 +25,8 @@ export const API_BASE_URL = 'https://kanban-api-production-f83c.up.railway.app/a
 
 export const API_ENDPOINTS = {
   WORKFLOWS: 'workflows',
+  ITEMS: 'items',
+  USERS: 'users',
 } as const;
 
 export const API_ERROR_CODE = {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,68 +6,33 @@ import {
   ScrollView,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { Colors } from '../theme/Colors';
-import { hp, commonFontStyle, wp } from '../utils/responsiveFn/responsiveFn';
-import { useGetItemsQuery } from '../redux/api/apiSlice';
+import { wp, hp, commonFontStyle } from '../utils/responsiveFn/responsiveFn';
+import { useGetItemsQuery, useUpdateItemMutation } from '../redux/api/apiSlice';
+import UserSelectionModal from './UserSelectionModal';
+
+import EditValueModal from './EditValueModal';
+import StatusSelectionModal from './StatusSelectionModal';
+import { navigationRef } from '../navigation/RootContainer';
+import { SCREENS } from '../navigation/ScreensName';
 
 interface KanbanBoardProps {
   workflowId: string;
   statuses: any[];
 }
 
-const renderKanbanCard = ({ item }: any) => {
-  const { data: cardData, assignedToUser, createdAt } = item;
-  const formattedDate = new Date(createdAt).toLocaleDateString();
-
-  return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{cardData?.name}</Text>
-        {cardData?.value && (
-          <Text style={styles.cardValue}>
-            ${cardData.value.toLocaleString()}
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.cardBody}>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Contact:</Text>
-          <Text style={styles.infoValue}>
-            {cardData?.contactPerson || cardData?.role || 'N/A'}
-          </Text>
-        </View>
-
-        {cardData?.source && (
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Source:</Text>
-            <Text style={styles.infoValue}>{cardData.source}</Text>
-          </View>
-        )}
-      </View>
-
-      <View style={styles.cardFooter}>
-        <View style={styles.assigneeContainer}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {assignedToUser?.firstname?.charAt(0) || 'U'}
-            </Text>
-          </View>
-          <Text style={styles.assigneeName}>
-            {assignedToUser?.firstname || 'Unassigned'}
-          </Text>
-        </View>
-        <Text style={styles.cardDate}>{formattedDate}</Text>
-      </View>
-    </View>
-  );
-};
-
-const KanbanColumn = ({ workflowId, status }: any) => {
-  const [page, setPage] = React.useState(1);
-  const [allItems, setAllItems] = React.useState<any[]>([]);
-  const [isRefreshing, setIsRefreshing] = React.useState(false);
+const KanbanColumn = ({
+  workflowId,
+  status,
+  onAssigneePress,
+  onValuePress,
+  onMovePress,
+}: any) => {
+  const [page, setPage] = useState(1);
+  const [allItems, setAllItems] = useState<any[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data, isLoading, isFetching } = useGetItemsQuery({
     workflowId,
@@ -95,8 +60,79 @@ const KanbanColumn = ({ workflowId, status }: any) => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     setPage(1);
-    // The query will automatically re-run due to page change or we could use refetch()
     setIsRefreshing(false);
+  };
+
+  const renderKanbanCard = ({ item }: any) => {
+    const { data: cardData, assignedToUser, createdAt } = item;
+    const formattedDate = new Date(createdAt).toLocaleDateString();
+
+    return (
+      <TouchableOpacity
+        onPress={() =>
+          navigationRef.navigate(SCREENS.ItemDetailScreen, {
+            itemId: item.id,
+            itemTitle: cardData?.name,
+          })
+        }
+        style={styles.card}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>{cardData?.name}</Text>
+          <View style={styles.headerRight}>
+            {cardData?.value !== undefined && (
+              <TouchableOpacity
+                onPress={() => onValuePress(item)}
+                style={styles.valueBadge}
+              >
+                <Text style={styles.cardValue}>
+                  ${cardData.value.toLocaleString()}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={() => onMovePress(item)}
+              style={styles.moveBtn}
+            >
+              <Text style={styles.moveIcon}>⋮</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.cardBody}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Contact:</Text>
+            <Text style={styles.infoValue}>
+              {cardData?.contactPerson || cardData?.role || 'N/A'}
+            </Text>
+          </View>
+
+          {cardData?.source && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Source:</Text>
+              <Text style={styles.infoValue}>{cardData.source}</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.cardFooter}>
+          <TouchableOpacity
+            style={styles.assigneeContainer}
+            onPress={() => onAssigneePress(item)}
+          >
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {assignedToUser?.firstname?.charAt(0) || 'U'}
+              </Text>
+            </View>
+            <Text style={styles.assigneeName}>
+              {assignedToUser?.firstname || 'Unassigned'}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.cardDate}>{formattedDate}</Text>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -151,16 +187,121 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
   workflowId,
   statuses = [],
 }) => {
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isUserModalVisible, setUserModalVisible] = useState(false);
+  const [isValueModalVisible, setValueModalVisible] = useState(false);
+  const [isStatusModalVisible, setStatusModalVisible] = useState(false);
+  const [updateItem, { isLoading: isUpdating }] = useUpdateItemMutation();
+
+  const handleAssigneePress = (item: any) => {
+    setSelectedItem(item);
+    setUserModalVisible(true);
+  };
+
+  const handleValuePress = (item: any) => {
+    setSelectedItem(item);
+    setValueModalVisible(true);
+  };
+
+  const handleMovePress = (item: any) => {
+    setSelectedItem(item);
+    setStatusModalVisible(true);
+  };
+
+  const handleUserSelect = async (user: any) => {
+    if (selectedItem) {
+      try {
+        await updateItem({
+          id: selectedItem.id,
+          body: { assignedToId: user.id },
+        }).unwrap();
+        setUserModalVisible(false);
+      } catch (error) {
+        console.error('Failed to update assignee:', error);
+      }
+    }
+  };
+
+  const handleValueUpdate = async (newValue: number) => {
+    if (selectedItem) {
+      try {
+        await updateItem({
+          id: selectedItem.id,
+          body: {
+            statusId: selectedItem.statusId,
+            assignedToId: selectedItem.assignedToId,
+            data: {
+              ...selectedItem.data,
+              value: newValue,
+            },
+          },
+        }).unwrap();
+        setValueModalVisible(false);
+      } catch (error) {
+        console.error('Failed to update value:', error);
+      }
+    }
+  };
+
+  const handleStatusUpdate = async (status: any) => {
+    if (selectedItem) {
+      try {
+        await updateItem({
+          id: selectedItem.id,
+          body: {
+            statusId: status.id,
+            assignedToId: selectedItem.assignedToId,
+            data: selectedItem.data,
+          },
+        }).unwrap();
+        setStatusModalVisible(false);
+      } catch (error) {
+        console.error('Failed to update status:', error);
+      }
+    }
+  };
+
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.kanbanContainer}
-    >
-      {statuses?.map((status: any) => (
-        <KanbanColumn key={status.id} workflowId={workflowId} status={status} />
-      ))}
-    </ScrollView>
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.kanbanContainer}
+      >
+        {statuses.map((status: any, index: number) => (
+          <KanbanColumn
+            key={status.id || index}
+            workflowId={workflowId}
+            status={status}
+            onAssigneePress={handleAssigneePress}
+            onValuePress={handleValuePress}
+            onMovePress={handleMovePress}
+          />
+        ))}
+      </ScrollView>
+
+      <UserSelectionModal
+        isVisible={isUserModalVisible}
+        onClose={() => setUserModalVisible(false)}
+        onSelect={handleUserSelect}
+      />
+
+      <EditValueModal
+        isVisible={isValueModalVisible}
+        onClose={() => setValueModalVisible(false)}
+        initialValue={selectedItem?.data?.value}
+        onSubmit={handleValueUpdate}
+        isLoading={isUpdating}
+      />
+
+      <StatusSelectionModal
+        isVisible={isStatusModalVisible}
+        onClose={() => setStatusModalVisible(false)}
+        statuses={statuses}
+        onSelect={handleStatusUpdate}
+        currentStatusId={selectedItem?.statusId}
+      />
+    </View>
   );
 };
 
@@ -216,16 +357,37 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: hp(8),
+    alignItems: 'center',
+    marginBottom: hp(10),
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wp(8),
+  },
+  valueBadge: {
+    backgroundColor: '#fff9e6',
+    paddingHorizontal: wp(8),
+    paddingVertical: hp(4),
+    borderRadius: wp(6),
+    borderWidth: 1,
+    borderColor: '#efd362f8',
   },
   cardTitle: {
     ...commonFontStyle(700, 1.8, Colors.black),
     flex: 1,
-    marginRight: wp(5),
+    marginRight: wp(10),
   },
   cardValue: {
-    ...commonFontStyle(700, 1.6, Colors.primary),
+    ...commonFontStyle(700, 1.4, Colors.primary),
+  },
+  moveBtn: {
+    padding: wp(4),
+  },
+  moveIcon: {
+    fontSize: wp(20),
+    color: Colors.gray_B9,
+    fontWeight: '700',
   },
   cardBody: {
     marginBottom: hp(10),

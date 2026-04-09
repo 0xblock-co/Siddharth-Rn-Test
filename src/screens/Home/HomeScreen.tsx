@@ -9,12 +9,12 @@ import { useGetWorkflowsQuery } from '../../redux/api/apiSlice';
 import Loader from '../../components/Loader';
 
 const HomeScreen = () => {
-  const { data, isLoading } = useGetWorkflowsQuery({});
+  const { isLoading } = useGetWorkflowsQuery({});
 
   return (
     <SafeAreaView style={GeneralStyle.container}>
       {/* Header with integrated Drawer */}
-      <CustomHeader title="Home" workflows={data?.data} />
+      <CustomHeader title="Home" />
 
       {/* Main Content */}
       <View style={styles.content}>
