@@ -41,7 +41,7 @@ const KanbanColumn = ({
     statusId: status.id,
     assignedToId: filterAssigneeId,
     page: page,
-    limit: 10,
+    limit: 5,
   });
 
   // Reset page and items when filter changes
@@ -61,7 +61,9 @@ const KanbanColumn = ({
   }, [data, page]);
 
   const handleLoadMore = () => {
-    if (!isFetching && data?.pagination?.hasNextPage) {
+    console.log('page', page);
+
+    if (!isFetching && page < data?.pagination?.totalPages) {
       setPage(prev => prev + 1);
     }
   };
@@ -87,7 +89,9 @@ const KanbanColumn = ({
         style={styles.card}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{cardData?.name}</Text>
+          <Text style={styles.cardTitle}>
+            {cardData?.name || cardData?.title}
+          </Text>
           <View style={styles.headerRight}>
             {cardData?.value !== undefined && (
               <Text style={styles.cardValue}>

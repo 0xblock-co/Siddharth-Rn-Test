@@ -35,7 +35,14 @@ const WorkflowScreen = ({ route }: any) => {
   const [filterAssignee, setFilterAssignee] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<any>(null);
 
-  const { data, isLoading } = useGetWorkflowByIdQuery({ id: initialItem?.id });
+  const { data, isLoading } = useGetWorkflowByIdQuery(
+    { id: initialItem?.id },
+    {
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+    },
+  );
   const [createItem, { isLoading: isCreating }] = useCreateItemMutation();
 
   const workflowData = data?.data || initialItem;

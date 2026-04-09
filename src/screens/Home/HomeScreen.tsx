@@ -9,7 +9,14 @@ import { useGetWorkflowsQuery } from '../../redux/api/apiSlice';
 import Loader from '../../components/Loader';
 
 const HomeScreen = () => {
-  const { isLoading } = useGetWorkflowsQuery({});
+  const { isLoading } = useGetWorkflowsQuery(
+    {},
+    {
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+    },
+  );
 
   return (
     <SafeAreaView style={GeneralStyle.container}>
