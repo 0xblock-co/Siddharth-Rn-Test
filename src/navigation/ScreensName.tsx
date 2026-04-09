@@ -1,6 +1,7 @@
 export const SCREENS = {
   Splash: 'Splash',
   HomeScreen: 'HomeScreen',
+  WorkflowScreen: 'WorkflowScreen',
 };
 
 export interface ScreenNames {
@@ -8,6 +9,7 @@ export interface ScreenNames {
 
   HomeScreen: string;
   Splash: string;
+  WorkflowScreen: string;
 }
 
 export const SCREEN_NAMES: ScreenNames = {

@@ -1,23 +1,38 @@
-import React from 'react';
-import {StyleSheet, Text, View, TouchableOpacity} from 'react-native';
-import {Colors} from '../theme/Colors';
-import {wp, hp, commonFontStyle} from '../utils/responsiveFn/responsiveFn';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Colors } from '../theme/Colors';
+import { wp, hp, commonFontStyle } from '../utils/responsiveFn/responsiveFn';
+import CustomDrawer from './CustomDrawer';
 
 interface CustomHeaderProps {
   title: string;
-  onMenuPress: () => void;
+  workflows?: any[];
 }
 
-const CustomHeader: React.FC<CustomHeaderProps> = ({title, onMenuPress}) => {
+const CustomHeader: React.FC<CustomHeaderProps> = ({ title, workflows }) => {
+  const [isDrawerVisible, setDrawerVisible] = useState(false);
+
+  const toggleDrawer = () => {
+    setDrawerVisible(!isDrawerVisible);
+  };
+
   return (
-    <View style={styles.header}>
-      <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
-        <View style={styles.hamburgerLine} />
-        <View style={[styles.hamburgerLine, {width: wp(15)}]} />
-        <View style={styles.hamburgerLine} />
-      </TouchableOpacity>
-      <Text style={styles.headerTitle}>{title}</Text>
-      <View style={{width: wp(30)}} />
+    <View>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={toggleDrawer} style={styles.menuButton}>
+          <View style={styles.hamburgerLine} />
+          <View style={[styles.hamburgerLine, { width: wp(15) }]} />
+          <View style={styles.hamburgerLine} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{title}</Text>
+        <View style={{ width: wp(30) }} />
+      </View>
+
+      <CustomDrawer
+        isVisible={isDrawerVisible}
+        onClose={toggleDrawer}
+        workflows={workflows}
+      />
     </View>
   );
 };

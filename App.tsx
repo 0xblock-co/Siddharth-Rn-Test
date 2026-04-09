@@ -1,19 +1,17 @@
-import { Animated, Easing } from 'react-native';
-import React, { useRef } from 'react';
+import React from 'react';
 import { Provider } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import RootContainer from './src/navigation/RootContainer';
 import { GeneralStyle } from './src/theme/GeneralStyle';
+import { store } from './src/store';
 
-const App = ({}) => {
+const App = () => {
   return (
-    // <Provider store={store}>
-    // {/* <PersistGate loading={null} persistor={persistor}> */}
-    <SafeAreaView style={GeneralStyle.flex}>
-      <RootContainer />
-    </SafeAreaView>
-    // </PersistGate>
-    // </Provider>
+    <Provider store={store}>
+      <SafeAreaView style={GeneralStyle.flex}>
+        <RootContainer />
+      </SafeAreaView>
+    </Provider>
   );
 };
 

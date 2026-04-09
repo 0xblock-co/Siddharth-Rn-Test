@@ -17,12 +17,30 @@ import {
 } from '../utils/responsiveFn/responsiveFn';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CustomImage from './CustomImage';
+import { IMAGES } from '../assets/images';
+
+import { useNavigation } from '@react-navigation/native';
+import { SCREENS } from '../navigation/ScreensName';
+
 interface CustomDrawerProps {
   isVisible: boolean;
   onClose: () => void;
+  workflows?: any[];
 }
 
-const CustomDrawer: React.FC<CustomDrawerProps> = ({ isVisible, onClose }) => {
+const CustomDrawer: React.FC<CustomDrawerProps> = ({
+  isVisible,
+  onClose,
+  workflows = [],
+}) => {
+  const navigation = useNavigation<any>();
+
+  const handleWorkflowClick = (item: any) => {
+    onClose();
+    navigation.navigate(SCREENS.WorkflowScreen, { item });
+  };
+
   return (
     <Modal
       isVisible={isVisible}
@@ -41,21 +59,32 @@ const CustomDrawer: React.FC<CustomDrawerProps> = ({ isVisible, onClose }) => {
         <SafeAreaView style={GeneralStyle.flex}>
           <View style={styles.drawerHeader}>
             <Text style={styles.drawerTitle}>Menu</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
+            <CustomImage
+              source={IMAGES.close}
+              size={wp(20)}
+              onPress={onClose}
+              containerStyle={styles.closeButton}
+            />
           </View>
 
           <ScrollView style={styles.menuList}>
-            {['Home'].map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.menuItem}
-                onPress={onClose}
-              >
-                <Text style={styles.menuItemText}>{item}</Text>
-              </TouchableOpacity>
-            ))}
+            {/* Home Item */}
+            <TouchableOpacity style={styles.menuItem} onPress={onClose}>
+              <Text style={styles.menuItemText}>Home</Text>
+            </TouchableOpacity>
+
+            {/* Workflow Titles */}
+            {workflows &&
+              workflows.length > 0 &&
+              workflows.map((item, index) => (
+                <TouchableOpacity
+                  key={item.id || index}
+                  style={styles.menuItem}
+                  onPress={() => handleWorkflowClick(item)}
+                >
+                  <Text style={styles.menuItemText}>{item.title}</Text>
+                </TouchableOpacity>
+              ))}
           </ScrollView>
         </SafeAreaView>
       </View>
