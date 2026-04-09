@@ -36,7 +36,8 @@ const ItemDetailScreen = ({ route }: any) => {
   const [deleteItem, { isLoading: isDeleting }] = useDeleteItemMutation();
 
   const item = data?.data;
-  const itemName = item?.data?.name || item?.data?.companyName || item?.data?.role;
+  const itemName =
+    item?.data?.name || item?.data?.companyName || item?.data?.role;
   const headerTitle = itemName || itemTitle || 'Item Details';
 
   // Fetch workflow to get all available statuses
@@ -157,7 +158,18 @@ const ItemDetailScreen = ({ route }: any) => {
             style={styles.card}
             onPress={() => setUserModalVisible(true)}
           >
-            <Text style={styles.sectionTitle}>Assignee Details</Text>
+            <Text
+              style={[
+                styles.sectionTitle,
+                {
+                  borderBottomWidth: 1,
+                  borderBottomColor: '#f0f0f0',
+                  paddingBottom: hp(8),
+                },
+              ]}
+            >
+              Assignee Details
+            </Text>
             <View style={styles.assigneeInfo}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
@@ -178,7 +190,18 @@ const ItemDetailScreen = ({ route }: any) => {
           </TouchableOpacity>
 
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Workflow Status</Text>
+            <Text
+              style={[
+                styles.sectionTitle,
+                {
+                  borderBottomWidth: 1,
+                  borderBottomColor: '#f0f0f0',
+                  paddingBottom: hp(8),
+                },
+              ]}
+            >
+              Workflow Status
+            </Text>
             {renderDetailRow('Workflow Key', item?.workflowKey)}
             {renderDetailRow(
               'Status',
@@ -255,9 +278,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...commonFontStyle(700, 2, Colors.primary),
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    paddingBottom: hp(8),
+
+    marginBottom: hp(8),
     flex: 1,
   },
   cardTitleRow: {
@@ -265,6 +287,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: hp(15),
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   editLink: {
     ...commonFontStyle(600, 1.4, Colors.primary),
