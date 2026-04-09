@@ -15,7 +15,7 @@ const BackHeader: React.FC<BackHeaderProps> = ({ title }) => {
   return (
     <View style={styles.header}>
       <CustomImage
-        source={IMAGES.backArrow2}
+        source={IMAGES.backArrow}
         size={wp(25)}
         onPress={() => navigation.goBack()}
         containerStyle={styles.backButton}
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray_B9,
-    paddingHorizontal: wp(20),
+    paddingHorizontal: wp(10),
   },
   headerTitle: {
     ...commonFontStyle(700, 2.5, Colors.black),

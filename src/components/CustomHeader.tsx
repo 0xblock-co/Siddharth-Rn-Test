@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray_B9,
+    paddingHorizontal: wp(20),
   },
   headerTitle: {
     ...commonFontStyle(700, 2.5, Colors.black),
