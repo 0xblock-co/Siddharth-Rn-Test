@@ -124,6 +124,7 @@ const WorkflowScreen = ({ route }: any) => {
         <View style={GeneralStyle.flex}>
           <KanbanBoard
             workflowId={workflowData?.id}
+            fields={fields}
             statuses={
               filterStatus
                 ? workflowData?.statuses?.filter(

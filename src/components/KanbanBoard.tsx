@@ -20,12 +20,14 @@ import { SCREENS } from '../navigation/ScreensName';
 
 interface KanbanBoardProps {
   workflowId: string;
+  fields: any[];
   statuses: any[];
   filterAssigneeId?: string;
 }
 
-const KanbanColumn = ({
+const KanbanColumn = React.memo(({
   workflowId,
+  fields,
   status,
   filterAssigneeId,
   onAssigneePress,
@@ -55,18 +57,22 @@ const KanbanColumn = ({
       if (page === 1) {
         setAllItems(data.data);
       } else {
-        setAllItems(prev => [...prev, ...data.data]);
+        // Only append if items aren't already there (avoid duplicates)
+        setAllItems(prev => {
+          const newItems = data.data.filter(
+            (item: any) => !prev.find(p => p.id === item.id),
+          );
+          return [...prev, ...newItems];
+        });
       }
     }
   }, [data, page]);
 
-  const handleLoadMore = () => {
-    console.log('page', page);
-
-    if (!isFetching && page < data?.pagination?.totalPages) {
+  const handleLoadMore = React.useCallback(() => {
+    if (!isFetching && page < (data?.pagination?.totalPages || 0)) {
       setPage(prev => prev + 1);
     }
-  };
+  }, [isFetching, page, data?.pagination?.totalPages]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -78,24 +84,48 @@ const KanbanColumn = ({
     const { data: cardData, assignedToUser, createdAt } = item;
     const formattedDate = new Date(createdAt).toLocaleDateString();
 
+    // Dynamically find fields for display
+    const titleField =
+      fields?.length > 0
+        ? fields.find((f: any) => f.key === 'name' || f.key === 'title') ||
+          fields[0]
+        : null;
+    const valueField =
+      fields?.length > 0
+        ? fields.find((f: any) => f.key === 'value' || f.key === 'amount')
+        : null;
+
+    // Filter out title and value fields for the body, and limit to 2-3 fields
+    const bodyFields =
+      fields?.length > 0
+        ? fields
+            .filter(
+              (f: any) =>
+                f.key !== titleField?.key && f.key !== valueField?.key,
+            )
+            .slice(0, 3)
+        : [];
+
     return (
       <TouchableOpacity
         onPress={() =>
           navigationRef.navigate(SCREENS.ItemDetailScreen, {
             itemId: item.id,
-            itemTitle: cardData?.name,
+            itemTitle: titleField ? cardData?.[titleField.key] : 'Item Details',
           })
         }
         style={styles.card}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>
-            {cardData?.name || cardData?.title}
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {(titleField && cardData?.[titleField.key]) || 'Untitled'}
           </Text>
           <View style={styles.headerRight}>
-            {cardData?.value !== undefined && (
+            {valueField && cardData?.[valueField.key] !== undefined && (
               <Text style={styles.cardValue}>
-                ${cardData.value.toLocaleString()}
+                {typeof cardData[valueField.key] === 'number'
+                  ? `$${cardData[valueField.key].toLocaleString()}`
+                  : cardData[valueField.key]}
               </Text>
             )}
             <TouchableOpacity
@@ -108,17 +138,18 @@ const KanbanColumn = ({
         </View>
 
         <View style={styles.cardBody}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Contact:</Text>
-            <Text style={styles.infoValue}>
-              {cardData?.contactPerson || cardData?.role || 'N/A'}
-            </Text>
-          </View>
-
-          {cardData?.source && (
+          {bodyFields.map((field: any, index: number) => (
+            <View key={field.key || index} style={styles.infoRow}>
+              <Text style={styles.infoLabel}>{field.label}:</Text>
+              <Text style={styles.infoValue} numberOfLines={1}>
+                {cardData?.[field.key]?.toString() || 'N/A'}
+              </Text>
+            </View>
+          ))}
+          {bodyFields.length === 0 && !valueField && (
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Source:</Text>
-              <Text style={styles.infoValue}>{cardData.source}</Text>
+              <Text style={styles.infoLabel}>ID:</Text>
+              <Text style={styles.infoValue}>#{item.id.slice(-6)}</Text>
             </View>
           )}
         </View>
@@ -149,7 +180,7 @@ const KanbanColumn = ({
         <Text style={styles.columnTitle}>{status.title}</Text>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
-            {data?.pagination?.totalItems || allItems.length}
+            {data?.pagination?.total || allItems.length}
           </Text>
         </View>
       </View>
@@ -170,29 +201,45 @@ const KanbanColumn = ({
           contentContainerStyle={styles.columnList}
           showsVerticalScrollIndicator={false}
           onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.1} // Trigger closer to the bottom
+          initialNumToRender={5} // Only render initial limit
+          maxToRenderPerBatch={5}
+          windowSize={5}
+          removeClippedSubviews={true}
           onRefresh={handleRefresh}
           refreshing={isRefreshing}
           ListEmptyComponent={() => (
             <Text style={styles.emptyText}>No items found</Text>
           )}
-          ListFooterComponent={() =>
-            isFetching && page > 1 ? (
-              <ActivityIndicator
-                size="small"
-                color={Colors.primary}
-                style={{ marginVertical: hp(10) }}
-              />
-            ) : null
-          }
+          ListFooterComponent={() => {
+            if (isFetching && page > 1) {
+              return (
+                <View style={styles.footerLoader}>
+                  <ActivityIndicator size="small" color={Colors.primary} />
+                  <Text style={styles.footerText}>Loading more...</Text>
+                </View>
+              );
+            }
+            
+            if (!isFetching && data?.pagination && allItems.length >= data.pagination.total && allItems.length > 0) {
+               return (
+                <View style={styles.footerLoader}>
+                  <Text style={styles.footerText}>No more items</Text>
+                </View>
+              );
+            }
+
+            return <View style={{ height: hp(20) }} />;
+          }}
         />
       )}
     </View>
   );
-};
+});
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({
   workflowId,
+  fields = [],
   statuses = [],
   filterAssigneeId,
 }) => {
@@ -281,6 +328,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({
           <KanbanColumn
             key={status.id || index}
             workflowId={workflowId}
+            fields={fields}
             status={status}
             filterAssigneeId={filterAssigneeId}
             onAssigneePress={handleAssigneePress}
@@ -409,7 +457,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     ...commonFontStyle(400, 1.4, Colors.gray_B9),
-    width: wp(60),
+    width: wp(100),
   },
   infoValue: {
     ...commonFontStyle(500, 1.4, Colors.secondary),
@@ -449,5 +497,15 @@ const styles = StyleSheet.create({
     ...commonFontStyle(400, 1.6, Colors.gray_B9),
     textAlign: 'center',
     marginTop: hp(20),
+  },
+  footerLoader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: hp(15),
+    gap: wp(8),
+  },
+  footerText: {
+    ...commonFontStyle(500, 1.4, Colors.gray_B9),
   },
 });
